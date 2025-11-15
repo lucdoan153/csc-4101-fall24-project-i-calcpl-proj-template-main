@@ -151,7 +151,7 @@ and eval_let x e1 e2 =
   eval e2'
 
 (** [eval_bop bop e1 e2] is the [v] such that [e1 bop e2 ==> v]. *) 
-and eval_bop bop e1 e2 = 
+and eval_bop bop e1 e2 =
   match bop, eval e1, eval e2 with
   | Add, Int a, Int b -> Int (a + b)
   | Sub, Int a, Int b -> Int (a - b)
@@ -159,13 +159,26 @@ and eval_bop bop e1 e2 =
   | Div, Int a, Int b -> Int (a / b)
   | Leq, Int a, Int b -> Bool (a <= b)
   | Geq, Int a, Int b -> Bool (a >= b)
+  | AddF, Int a, Int b -> Float (float_of_int a +. float_of_int b)
+  | AddF, Int a, Float b -> Float (float_of_int a +. b)
+  | AddF, Float a, Int b -> Float (a +. float_of_int b)
   | AddF, Float a, Float b -> Float (a +. b)
+  | SubF, Int a, Int b -> Float (float_of_int a -. float_of_int b)
+  | SubF, Int a, Float b -> Float (float_of_int a -. b)
+  | SubF, Float a, Int b -> Float (a -. float_of_int b)
   | SubF, Float a, Float b -> Float (a -. b)
+  | MulF, Int a, Int b -> Float (float_of_int a *. float_of_int b)
+  | MulF, Int a, Float b -> Float (float_of_int a *. b)
+  | MulF, Float a, Int b -> Float (a *. float_of_int b)
   | MulF, Float a, Float b -> Float (a *. b)
+  | DivF, Int a, Int b -> Float (float_of_int a /. float_of_int b)
+  | DivF, Int a, Float b -> Float (float_of_int a /. b)
+  | DivF, Float a, Int b -> Float (a /. float_of_int b)
   | DivF, Float a, Float b -> Float (a /. b)
   | Leq, Float a, Float b -> Bool (a <= b)
   | Geq, Float a, Float b -> Bool (a >= b)
   | _ -> failwith bop_err
+
 
 (** [eval_if e1 e2 e3] is the [v] such that [if e1 then e2 ==> v]. *) 
 and eval_if e1 e2 e3 = 
