@@ -66,6 +66,7 @@ let round_dfrac d x =
 let rec typeof env = function
   | Int _ -> TInt
   | Bool _ -> TBool
+  | Float _ -> TFloat
   | Var x -> lookup env x
   | Let (x, t ,e1, e2) -> typeof_let env x t e1 e2
   | Binop (bop, e1, e2) -> typeof_bop env bop e1 e2
@@ -86,8 +87,17 @@ and typeof_bop env bop e1 e2 =
   let t1, t2 = typeof env e1, typeof env e2 in
   match bop, t1, t2 with
   | Add, TInt, TInt 
+  | Sub, TInt, TInt -> TInt
   | Mult, TInt, TInt -> TInt
+  | Div, TInt, TInt -> TInt
   | Leq, TInt, TInt -> TBool
+  | Geq, TInt, TInt -> TBool
+  | AddF, TFloat, TFloat -> TFloat
+  | SubF, TFloat, TFloat -> TFloat
+  | MulF, TFloat, TFloat -> TFloat
+  | DivF, TFloat, TFloat -> TFloat
+  | Leq, TFloat, TFloat -> TBool
+  | Geq, TFloat, TFloat -> TBool 
   | _ -> failwith bop_err
   
 (** Helper function for [typeof]. *)
@@ -112,6 +122,7 @@ let typecheck e =
     is, [e{v/x}]. *)
 let rec subst e v x = match e with
   | Var y -> if x = y then v else e
+  | Float _ -> e
   | Bool _ -> e
   | Int _ -> e
   | Binop (bop, e1, e2) -> Binop (bop, subst e1 v x, subst e2 v x)
@@ -126,7 +137,7 @@ let rec subst e v x = match e with
   
 (** [eval e] the [v]such that [e ==> v]. *)
 let rec eval (e : expr) : expr = match e with
-  | Int _ | Bool _ -> e
+  | Int _ | Bool _ | Float _ -> e
   | Var _ -> failwith unbound_var_err
   | Binop (bop, e1, e2) -> eval_bop bop e1 e2
   | Let (x, _, e1, e2) -> subst e2 (eval e1) x|> eval
