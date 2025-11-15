@@ -138,9 +138,12 @@ let rec eval (e : expr) : expr = match e with
   | Int _ | Bool _ | Float _ -> e
   | Var _ -> failwith unbound_var_err
   | Binop (bop, e1, e2) -> eval_bop bop e1 e2
-  | Let (x, _, e1, e2) -> subst e2 (eval e1) x|> eval
+  | Let (x, _, e1, e2) -> 
+      let v1 = eval e1 in
+      let e2' = subst e2 v1 x in
+      eval e2'
   | If (e1, e2, e3) -> eval_if e1 e2 e3
-  
+
 (** [eval_let x e1 e2] is the [v] such that [let x = e1 in e2 ==> v]. *) 
 and eval_let x e1 e2 = 
   let v1 = eval e1 in 
@@ -151,17 +154,26 @@ and eval_let x e1 e2 =
 and eval_bop bop e1 e2 = 
   match bop, eval e1, eval e2 with
   | Add, Int a, Int b -> Int (a + b)
+  | Sub, Int a, Int b -> Int (a - b)
   | Mult, Int a, Int b -> Int (a * b)
-  | Leq , Int a, Int b -> Bool (a <= b)
+  | Div, Int a, Int b -> Int (a / b)
+  | Leq, Int a, Int b -> Bool (a <= b)
+  | Geq, Int a, Int b -> Bool (a >= b)
+  | AddF, Float a, Float b -> Float (a +. b)
+  | SubF, Float a, Float b -> Float (a -. b)
+  | MulF, Float a, Float b -> Float (a *. b)
+  | DivF, Float a, Float b -> Float (a /. b)
+  | Leq, Float a, Float b -> Bool (a <= b)
+  | Geq, Float a, Float b -> Bool (a >= b)
   | _ -> failwith bop_err
 
 (** [eval_if e1 e2 e3] is the [v] such that [if e1 then e2 ==> v]. *) 
 and eval_if e1 e2 e3 = 
-  match eval e1 with 
+  match eval e1 with
   | Bool true -> eval e2
   | Bool false -> eval e3
   | _ -> failwith if_guard_err
-
+  
 (** [interp s] interprets [s] by lexing and parsing,
     evaluating, and converting the result to string. *)
 let interp (s : string) : expr =
