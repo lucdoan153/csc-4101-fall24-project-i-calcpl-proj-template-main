@@ -1,6 +1,4 @@
-%{
-open Ast
-%}
+%start <Ast.expr> prog
 
 %token <int> INT
 %token <float> FLOAT
@@ -31,19 +29,18 @@ open Ast
 %token FLOAT_TYPE
 %token EOF
 
+%left LEQ GEQ
+%left PLUS MINUS
+%left TIMES DIV
+%left PLUS_F MINUS_F
+%left TIMES_F DIV_F
 %nonassoc IN
 %nonassoc ELSE
-%left LEQ GEQ
-%left PLUS MINUS PLUS_F MINUS_F
-%left TIMES DIV TIMES_F DIV_F
-
-%start <Ast.expr> prog
 
 %%
 
 prog:
   | e = expr; EOF { e }
-  ;
 
 expr:
   | i = INT { Int i }
@@ -66,7 +63,6 @@ expr:
   | IF; e1 = expr; THEN; e2 = expr; ELSE; e3 = expr
         { If (e1, e2, e3) }
   | LPAREN; e = expr; RPAREN { e }
-  ;
 
 typ:
   | INT_TYPE { TInt }
