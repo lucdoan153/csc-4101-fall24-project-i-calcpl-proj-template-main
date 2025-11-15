@@ -1,4 +1,6 @@
-%start <Ast.expr> prog
+%{
+open Ast
+%}
 
 %token <int> INT
 %token <float> FLOAT
